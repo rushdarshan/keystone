@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Research Project — Recommendation Report</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<style>
+  :root{ --bg:#0a0e17; --panel:#111725; --panel2:#161d2e; --line:#232c40; --ink:#e8edf6; --mut:#93a0b8; --acc:#5eead4; --acc2:#818cf8; --gold:#fbbf24; }
+  *{scroll-behavior:smooth}
+  body{background:radial-gradient(1200px 700px at 80% -10%, #16203a 0%, transparent 60%),radial-gradient(900px 600px at 0% 0%, #10203a 0%, transparent 55%),var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);border:1px solid var(--line);border-radius:16px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:11px}
+  .glow{box-shadow:0 0 0 1px rgba(94,234,212,.25),0 20px 60px -20px rgba(94,234,212,.25)}
+  .bar{height:8px;border-radius:999px;background:#1c2436;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--acc2),var(--acc))}
+  h2{scroll-margin-top:80px}
+  a{color:var(--acc)}
+  table{border-collapse:collapse;width:100%}
+  th,td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;font-size:13px;vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .rank{font-variant-numeric:tabular-nums}
+  .navlink{color:var(--mut);font-size:12px}
+  .navlink:hover{color:var(--acc)}
+  ::selection{background:rgba(129,140,248,.35)}
+</style>
+</head>
+<body class="antialiased">
+<div class="max-w-6xl mx-auto px-5 py-8">
+
+  <!-- HERO -->
+  <header class="card glow p-7 mb-8">
+    <div class="flex items-center gap-2 mb-3 flex-wrap">
+      <span class="chip" style="color:var(--acc)">Research-paper implementation</span>
+      <span class="chip" style="color:var(--acc2)">No external / paid APIs</span>
+      <span class="chip" style="color:var(--gold)">Local inference</span>
+      <span class="chip text-slate-300">Algorithmic, not CRUD</span>
+    </div>
+    <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Which AI research project should you build?</h1>
+    <p class="text-[15px] mt-3 max-w-3xl" style="color:var(--mut)">
+      Synthesis of the strongest reproducible, locally-runnable research directions for a single-student capstone —
+      scored on novelty, depth, and demo value. Skip to the verdict, or read the full ranking and build plan.
+    </p>
+    <div class="flex gap-3 mt-5 flex-wrap text-sm">
+      <a class="navlink" href="#verdict">▸ Verdict</a>
+      <a class="navlink" href="#top5">▸ Top 5</a>
+      <a class="navlink" href="#top20">▸ Ranked 20</a>
+      <a class="navlink" href="#winner">▸ Winner build plan</a>
+      <a class="navlink" href="#timeline">▸ Timeline</a>
+      <a class="navlink" href="#extensions">▸ Extensions</a>
+    </div>
+  </header>
+
+  <!-- VERDICT -->
+  <section id="verdict" class="mb-10">
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="card p-6 md:col-span-2 glow">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="chip" style="color:var(--gold);border-color:#5a4a1a;background:#231c0a">★ WINNER</span>
+          <span class="text-xs" style="color:var(--mut)">Score 94 / 100</span>
+        </div>
+        <h2 class="text-2xl font-bold mt-1">Self-Supervised Vision (DINO) → Distilled &amp; Quantized Edge Encoder</h2>
+        <p class="text-[15px] mt-3" style="color:var(--mut)">
+          Reproduce <b class="text-slate-200">DINO self-supervised ViT pretraining</b> from scratch on a small dataset,
+          then contribute <b class="text-slate-200">a single meaningful improvement</b>: distill the self-supervised teacher into a
+          tiny student and quantize it for CPU/edge inference — measuring the representation-quality vs. latency/size trade-off with linear probes.
+        </p>
+        <p class="text-[14px] mt-3" style="color:var(--mut)">
+          It hits every constraint: paper faithful, from scratch, no APIs, runs on one modest GPU (or Colab),
+          and the "improvement" is a genuine research question (does SSL survive aggressive compression?) — not a wrapper.
+        </p>
+      </div>
+      <div class="card p-6">
+        <div class="text-xs mb-3" style="color:var(--mut)">Why it wins</div>
+        <ul class="space-y-2 text-sm">
+          <li>◆ Combines <b>SSL + distillation + quantization</b> — three hot subfields in one story.</li>
+          <li>◆ Clear <b>ablations</b> and metrics (kNN / linear-probe acc, params, latency).</li>
+          <li>◆ Strong <b>visual demo</b>: attention maps segment objects with no labels.</li>
+          <li>◆ Realistic on <b>CIFAR-10 / STL-10 / TinyImageNet</b> in days, not weeks.</li>
+          <li>◆ Publishable as a reproducibility + efficiency <b>workshop paper</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORING METHOD -->
+  <section class="mb-10">
+    <div class="card p-5">
+      <div class="text-xs mb-3" style="color:var(--mut)">Scoring rubric (per your brief) — weights sum to 100</div>
+      <div class="grid md:grid-cols-7 grid-cols-2 gap-3 text-center text-xs">
+        <div><div class="text-lg font-bold" style="color:var(--acc)">25</div>Novelty</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">20</div>Tech depth</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">15</div>Learning</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">15</div>Research rel.</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">10</div>Demo</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">10</div>Resume</div>
+        <div><div class="text-lg font-bold" style="color:var(--acc)">5</div>Feasibility</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOP 5 -->
+  <section id="top5" class="mb-10">
+    <h2 class="text-xl font-bold mb-4">The best 5 candidates</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+
+      <div class="card p-5">
+        <div class="flex justify-between items-start"><h3 class="font-semibold">1 · SSL → Distill → Quantize <span class="chip" style="color:var(--gold)">winner</span></h3><span class="mono text-sm" style="color:var(--acc)">94</span></div>
+        <p class="text-[13px] mt-2" style="color:var(--mut)">DINO / BYOL pretraining, then compress the frozen encoder. Improvement = a real research question about robustness of SSL features under compression.</p>
+        <div class="text-[11px] mono mt-3" style="color:var(--mut)">Paper: Caron et al., <i>Emerging Properties in Self-Supervised ViT (DINO)</i>, ICCV'21</div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex justify-between items-start"><h3 class="font-semibold">2 · Document Layout Understanding</h3><span class="mono text-sm" style="color:var(--acc)">90</span></div>
+        <p class="text-[13px] mt-2" style="color:var(--mut)">Detect tables/headings/reading-order. Very practical, research-heavy. Slightly heavier data pipeline; risk of drifting toward "object detection tutorial" if not framed around reading-order reasoning.</p>
+        <div class="text-[11px] mono mt-3" style="color:var(--mut)">Papers: LayoutLMv3 (ACM MM'22) / DiT / Detectron-based DocLayNet</div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex justify-between items-start"><h3 class="font-semibold">3 · Audio Deepfake / Anti-Spoofing</h3><span class="mono text-sm" style="color:var(--acc)">89</span></div>
+        <p class="text-[13px] mt-2" style="color:var(--mut)">Graph-attention spectro-temporal model. Timely, strong audio+DL combo. Needs the ASVspoof dataset (registration) and careful EER evaluation.</p>
+        <div class="text-[11px] mono mt-3" style="color:var(--mut)">Paper: AASIST, Jung et al., ICASSP'22; data: ASVspoof 2019 LA</div>
+      </div>
+
+      <div class="card p-5">
+        <div class="flex justify-between items-start"><h3 class="font-semibold">4 · Knowledge Distillation + Compression</h3><span class="mono text-sm" style="color:var(--acc)">87</span></div>
+        <p class="text-[13px] mt-2" style="color:var(--mut)">Reproduce a distillation method (CRD / RKD) and compress a large net. High industry relevance; slightly less "novel" alone — which is why it's folded into the winner.</p>
+        <div class="text-[11px] mono mt-3" style="color:var(--mut)">Papers: Hinton KD (NIPS'14 WS); Tian et al. CRD, ICLR'20</div>
+      </div>
+
+      <div class="card p-5 md:col-span-2">
+        <div class="flex justify-between items-start"><h3 class="font-semibold">5 · Tiny/Hybrid Vision Transformer for Edge</h3><span class="mono text-sm" style="color:var(--acc)">86</span></div>
+        <p class="text-[13px] mt-2" style="color:var(--mut)">Reproduce a lightweight ViT (MobileViT / FastViT), then prune + quantize. Great engineering, but the architecture is the star, so the "contribution" is mostly efficiency tuning rather than a new scientific question.</p>
+        <div class="text-[11px] mono mt-3" style="color:var(--mut)">Papers: MobileViT (ICLR'22); FastViT (ICCV'23, verified arXiv:2303.14189)</div>
+      </div>
+    </div>
+    <p class="text-xs mt-3" style="color:var(--mut)">Runner-up ideas 6–20 are ranked below. All satisfy the hard constraints (no paid APIs, local, algorithmic, paper-backed).</p>
+  </section>
+
+  <!-- TOP 20 TABLE -->
+  <section id="top20" class="mb-10">
+    <h2 class="text-xl font-bold mb-4">Full ranking — 20 projects</h2>
+    <div class="card p-2 overflow-x-auto">
+      <table>
+        <thead><tr><th class="rank">#</th><th>Project</th><th>Domain</th><th>Anchor paper</th><th>Difficulty</th><th class="rank">Score</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- WINNER DETAIL -->
+  <section id="winner" class="mb-10">
+    <div class="card glow p-6">
+      <div class="flex items-center gap-2 mb-2"><span class="chip" style="color:var(--gold);border-color:#5a4a1a;background:#231c0a">★ WINNER — full build plan</span></div>
+      <h2 class="text-2xl font-bold">Self-Supervised ViT (DINO), then Distilled + Quantized Edge Encoder</h2>
+
+      <div class="grid md:grid-cols-2 gap-5 mt-5">
+        <div>
+          <h3 class="font-semibold text-sm mb-2" style="color:var(--acc)">Problem &amp; contribution</h3>
+          <p class="text-[13px]" style="color:var(--mut)">Labels are expensive; SSL learns strong features without them. But SSL models are large. <b class="text-slate-200">Open question you answer:</b> how much can a self-supervised encoder be distilled + int8-quantized before its label-free representations degrade? You reproduce DINO, then contribute the compression study the original paper did not run at this scale.</p>
+
+          <h3 class="font-semibold text-sm mb-2 mt-4" style="color:var(--acc)">Math you'll use</h3>
+          <ul class="text-[13px] space-y-1" style="color:var(--mut)">
+            <li>• Cross-entropy over softened distributions; temperature sharpening</li>
+            <li>• Centering + EMA teacher (stop-grad, momentum update)</li>
+            <li>• Multi-crop augmentation, cosine schedules</li>
+            <li>• Post-training / QAT quantization (affine int8 mapping)</li>
+            <li>• kNN &amp; linear-probe evaluation (logistic regression)</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-sm mb-2" style="color:var(--acc)">Hardware &amp; data</h3>
+          <table class="text-[13px]"><tbody>
+            <tr><td>GPU</td><td>1× 8–16 GB (RTX 3060 / T4 / free Colab)</td></tr>
+            <tr><td>RAM / Disk</td><td>16 GB / ~30 GB</td></tr>
+            <tr><td>Dataset</td><td>CIFAR-10, STL-10, or TinyImageNet (public, permissive)</td></tr>
+            <tr><td>Frameworks</td><td>PyTorch + timm (all open-source, offline)</td></tr>
+          </tbody></table>
+          <h3 class="font-semibold text-sm mb-2 mt-4" style="color:var(--acc)">Metrics reported</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip text-slate-300">kNN top-1</span><span class="chip text-slate-300">Linear-probe acc</span>
+            <span class="chip text-slate-300">Params (M)</span><span class="chip text-slate-300">Model size (MB)</span>
+            <span class="chip text-slate-300">CPU latency (ms)</span><span class="chip text-slate-300">Throughput (img/s)</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="font-semibold text-sm mb-2 mt-6" style="color:var(--acc)">Folder structure</h3>
+      <pre class="mono text-[12px] p-4 rounded-lg overflow-x-auto" style="background:#0c1220;border:1px solid var(--line);color:#cbd5e1">ssl-edge/
+├── configs/            # yaml: dino.yaml, distill.yaml, quant.yaml
+├── data/               # dataset wrappers + multi-crop transforms
+├── models/
+│   ├── vit.py          # ViT / small backbone (from scratch)
+│   ├── dino_head.py    # projection head + EMA teacher
+│   └── student.py      # tiny student (fewer dims/depth)
+├── engine/
+│   ├── train_dino.py   # SSL pretraining loop
+│   ├── distill.py      # teacher→student KD
+│   ├── quantize.py     # PTQ / QAT (int8)
+│   └── eval.py         # kNN + linear probe + latency bench
+├── viz/attention.py    # self-attention → object masks (demo)
+├── scripts/            # reproduce.sh, ablate.sh
+├── results/            # logs, csv, figures
+└── README.md</pre>
+
+      <div class="grid md:grid-cols-2 gap-5 mt-6">
+        <div>
+          <h3 class="font-semibold text-sm mb-2" style="color:var(--acc)">Pipeline (4 stages)</h3>
+          <ol class="text-[13px] space-y-2" style="color:var(--mut)">
+            <li><b class="text-slate-200">1. Reproduce DINO.</b> Train ViT-Small/backbone with multi-crop + EMA teacher; match reported kNN accuracy trend on the chosen dataset.</li>
+            <li><b class="text-slate-200">2. Distill.</b> Freeze SSL teacher, train a tiny student to mimic embeddings (feature-matching + relational KD).</li>
+            <li><b class="text-slate-200">3. Quantize.</b> Apply PTQ then QAT to int8; export for CPU inference.</li>
+            <li><b class="text-slate-200">4. Evaluate.</b> Linear probe + kNN + latency/size on each variant; plot the trade-off curve.</li>
+          </ol>
+        </div>
+        <div>
+          <h3 class="font-semibold text-sm mb-2" style="color:var(--acc)">Ablation studies</h3>
+          <ul class="text-[13px] space-y-1" style="color:var(--mut)">
+            <li>• Distillation loss: feature-match vs. relational (RKD) vs. logit KD</li>
+            <li>• Student size sweep (depth × width) vs. accuracy retained</li>
+            <li>• PTQ vs. QAT; int8 vs. fp16</li>
+            <li>• # multi-crops &amp; teacher temperature sensitivity</li>
+            <li>• Does the compressed model keep DINO's object-segmentation attention?</li>
+          </ul>
+          <h3 class="font-semibold text-sm mb-2 mt-4" style="color:var(--acc)">Risks &amp; mitigations</h3>
+          <ul class="text-[13px] space-y-1" style="color:var(--mut)">
+            <li>• SSL is compute-hungry → use small dataset + small ViT, fewer epochs.</li>
+            <li>• Unstable teacher EMA → warmup + gradient clipping, follow paper schedule.</li>
+            <li>• Quant accuracy drop → fall back PTQ→QAT; report honestly (it's a finding).</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="font-semibold text-sm mb-2 mt-6" style="color:var(--acc)">Paper-reproduction checklist</h3>
+      <div class="grid md:grid-cols-2 gap-x-6 text-[13px]" style="color:var(--mut)">
+        <div>☐ Multi-crop augmentation (2 global + N local)<br>☐ EMA teacher with momentum schedule<br>☐ Centering + sharpening on teacher output<br>☐ Projection head (MLP + L2 norm + weight-norm)</div>
+        <div>☐ Cosine LR + weight-decay schedule<br>☐ kNN eval matches reported trend<br>☐ Attention-map visualization reproduced<br>☐ Seeds + config logged for reproducibility</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="timeline" class="mb-10">
+    <h2 class="text-xl font-bold mb-4">4-week timeline &amp; milestones</h2>
+    <div class="grid md:grid-cols-4 gap-4">
+      <div class="card p-4"><div class="text-xs mono" style="color:var(--acc2)">WEEK 1</div><h4 class="font-semibold mt-1 text-sm">Reproduce backbone</h4><p class="text-[12px] mt-1" style="color:var(--mut)">Implement ViT + DINO loss; overfit tiny subset to validate; data pipeline done.</p></div>
+      <div class="card p-4"><div class="text-xs mono" style="color:var(--acc2)">WEEK 2</div><h4 class="font-semibold mt-1 text-sm">Full SSL run + eval</h4><p class="text-[12px] mt-1" style="color:var(--mut)">Train teacher; kNN/linear probe baseline; attention-map demo working.</p></div>
+      <div class="card p-4"><div class="text-xs mono" style="color:var(--acc2)">WEEK 3</div><h4 class="font-semibold mt-1 text-sm">Distill + quantize</h4><p class="text-[12px] mt-1" style="color:var(--mut)">Student KD; PTQ→QAT int8; latency/size benchmarks on CPU.</p></div>
+      <div class="card p-4"><div class="text-xs mono" style="color:var(--acc2)">WEEK 4</div><h4 class="font-semibold mt-1 text-sm">Ablations + write-up</h4><p class="text-[12px] mt-1" style="color:var(--mut)">Trade-off curves, ablation tables, README, short report / poster.</p></div>
+    </div>
+  </section>
+
+  <!-- EXTENSIONS + RESUME -->
+  <section id="extensions" class="mb-10">
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="card p-5">
+        <h3 class="font-semibold mb-2" style="color:var(--acc)">Extension ideas (pick one to go further)</h3>
+        <ul class="text-[13px] space-y-1" style="color:var(--mut)">
+          <li>• Deploy int8 student to <b>ONNX Runtime / phone</b> and report on-device FPS.</li>
+          <li>• Add <b>structured pruning</b> before quantization; compound compression.</li>
+          <li>• Explainability: compare attention maps pre/post compression quantitatively.</li>
+          <li>• Try SSL method swap (BYOL/iBOT) and compare compressibility.</li>
+        </ul>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-semibold mb-2" style="color:var(--acc)">Academic &amp; resume value</h3>
+        <p class="text-[13px]" style="color:var(--mut)"><b class="text-slate-200">Professors:</b> reproduces a landmark paper + adds an original efficiency study — demonstrates methodology and reproducibility (a recognized ML challenge).</p>
+        <p class="text-[13px] mt-2" style="color:var(--mut)"><b class="text-slate-200">Recruiters / ML engineers:</b> touches SSL, distillation, quantization, and on-device inference — exactly the efficient-deployment skillset industry hires for.</p>
+        <p class="text-[13px] mt-2" style="color:var(--mut)"><b class="text-slate-200">Publication:</b> fits an efficiency / reproducibility <b>workshop</b> (e.g., NeurIPS/ICLR workshops, or a college symposium).</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-center text-xs py-6" style="color:var(--mut)">
+    Synthesized from arXiv / Papers-with-Code / conference literature · FastViT abstract verified live on arXiv (2303.14189) · All candidates satisfy: paper-backed · from scratch · no paid APIs · local inference.
+  </footer>
+
+  <script>
+    const rows = [
+      [1,"SSL → Distill → Quantize edge encoder","SSL + Compression","DINO — Caron et al., ICCV'21","Hard",94],
+      [2,"Document layout & reading-order understanding","Document AI","LayoutLMv3, ACM MM'22","Hard",90],
+      [3,"Audio deepfake / anti-spoofing (graph attention)","Audio","AASIST, ICASSP'22","Hard",89],
+      [4,"Knowledge distillation + model compression","Compression","CRD, ICLR'20",'Medium',87],
+      [5,"Tiny/hybrid ViT for edge (prune+quantize)","Edge ViT","MobileViT ICLR'22 / FastViT ICCV'23","Medium",86],
+      [6,"Diffusion from scratch (DDPM) + fast sampler","Diffusion","DDPM, NeurIPS'20","Hard",85],
+      [7,"Masked autoencoder (MAE) pretraining study","SSL","MAE, CVPR'22","Hard",84],
+      [8,"Graph neural net for molecular property","GNN","MPNN / GIN, ICLR'19","Medium",83],
+      [9,"Time-series anomaly detection (transformer)","Anomaly","Anomaly Transformer, ICLR'22","Medium",82],
+      [10,"Neural OCR / scene-text recognition (CRNN+CTC)","OCR","CRNN, TPAMI'17","Medium",81],
+      [11,"Continual learning w/o forgetting (rehearsal)","Continual","DER / iCaRL, CVPR'17","Medium",80],
+      [12,"Federated learning simulation (FedAvg+)","Federated","FedAvg, AISTATS'17","Medium",79],
+      [13,"Speech keyword spotting for TinyML","TinyML/Audio","BC-ResNet, Interspeech'21","Medium",78],
+      [14,"Neural architecture search (weight-share)","AutoML","DARTS, ICLR'19","Hard",78],
+      [15,"Explainable vision (Grad-CAM++ / attention rollout)","XAI","Grad-CAM++, WACV'18","Easy",76],
+      [16,"Post-training int8 quantization toolkit study","Quantization","LSQ, ICLR'20","Medium",76],
+      [17,"Self-supervised audio (contrastive) embeddings","SSL/Audio","COLA/BYOL-A, ICASSP'21",'Medium',75],
+      [18,"Medical image segmentation (U-Net variants)","Medical","nnU-Net, Nat.Methods'21","Medium",74],
+      [19,"Offline RL on benchmark (CQL / IQL)","RL","IQL, ICLR'22","Hard",74],
+      [20,"Efficient attention (Linformer/Performer) study","Optimization","Performer, ICLR'21","Hard",73],
+    ];
+    const diffColor = d => d==="Easy"?"#4ade80": d==="Medium"?"#fbbf24":"#f87171";
+    document.getElementById("tbody").innerHTML = rows.map(r=>`
+      <tr>
+        <td class="rank mono" style="color:${r[0]<=5?'#fbbf24':'#93a0b8'}">${r[0]}</td>
+        <td class="text-slate-200">${r[1]}</td>
+        <td style="color:#93a0b8">${r[2]}</td>
+        <td class="mono text-[11px]" style="color:#93a0b8">${r[3]}</td>
+        <td><span class="chip" style="color:${diffColor(r[4])}">${r[4]}</span></td>
+        <td class="rank mono" style="color:var(--acc)">${r[5]}</td>
+      </tr>`).join("");
+  </script>

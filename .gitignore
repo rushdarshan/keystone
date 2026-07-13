@@ -1,0 +1,26 @@
+# Data
+data/
+papers/
+
+# Experiments
+experiments/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+tmp/
+.benchmarks/
+
+# IDE
+.serena/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.venv/
