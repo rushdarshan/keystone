@@ -175,10 +175,10 @@ def _run_pruning_loop(
     seeds: tuple[int, ...],
     *,
     skip_eval: bool,
+    probe_epochs: int = 10,
 ) -> dict[str, dict]:
     NUM_CLASSES = 100
     PROBE_TRAIN_PCT = 0.5
-    PROBE_EPOCHS = 10
 
     results: dict[str, dict] = {}
     active_methods = [m for m in METHODS if m in scores or m == "random"]
@@ -223,7 +223,7 @@ def _run_pruning_loop(
                         train_feat, train_lbl,
                         val_feat, val_lbl,
                         num_classes=NUM_CLASSES,
-                        epochs=PROBE_EPOCHS,
+                        epochs=probe_epochs,
                         learning_rate=0.01,
                         weight_decay=1e-4,
                         seed=cfg.seed,
@@ -297,6 +297,7 @@ def main() -> int:
     parser.add_argument("--model-name", default="vit_base_patch16_dinov3")
     parser.add_argument("--skip-causal", action="store_true")
     parser.add_argument("--skip-eval", action="store_true")
+    parser.add_argument("--probe-epochs", type=int, default=10)
     parser.add_argument("--quick", action="store_true")
     parser.add_argument("--pretrained", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
@@ -401,6 +402,7 @@ def main() -> int:
             model, head_specs, scores, eval_dataset, eval_indices, sample_input,
             cfg, ratios, seeds,
             skip_eval=args.skip_eval,
+            probe_epochs=args.probe_epochs,
         )
 
         _print_table(results)
