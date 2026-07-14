@@ -6,46 +6,37 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-class ParetoAnalyzer:
-    def __init__(self, results: pd.DataFrame):
-        self.df = results.sort_values("params")
-        self.pareto = self._compute_pareto()
-
-    def _compute_pareto(self):
-        pareto = []
-        best_acc = 0.0
-        for _, row in self.df.iterrows():
-            if row["best_acc"] > best_acc:
-                best_acc = row["best_acc"]
-                pareto.append(row)
-        return pd.DataFrame(pareto)
-
-    def marginal_gains(self):
-        gains = []
-        prev_acc = 0.0
-        prev_params = 0
-        for _, row in self.pareto.iterrows():
-            acc_gain = row["best_acc"] - prev_acc
-            param_cost = row["params"] - prev_params
-            efficiency = acc_gain / max(param_cost, 1) * 1e6
-            gains.append({
-                "component": row["component"],
-                "accuracy": row["best_acc"],
-                "params": row["params"],
-                "marginal_acc_gain": acc_gain,
-                "marginal_param_cost": param_cost,
-                "efficiency_micro": efficiency,
-            })
-            prev_acc = row["best_acc"]
-            prev_params = row["params"]
-        return pd.DataFrame(gains)
-
-
 def save_plots(results: pd.DataFrame, output_dir: str = "experiments"):
     out = Path(output_dir)
     out.mkdir(exist_ok=True)
-    analyzer = ParetoAnalyzer(results)
-    gains = analyzer.marginal_gains()
+
+    df = results.sort_values("params")
+    pareto_rows = []
+    best_acc = 0.0
+    for _, row in df.iterrows():
+        if row["best_acc"] > best_acc:
+            best_acc = row["best_acc"]
+            pareto_rows.append(row)
+    pareto = pd.DataFrame(pareto_rows)
+
+    gains = []
+    prev_acc = 0.0
+    prev_params = 0
+    for _, row in pareto.iterrows():
+        acc_gain = row["best_acc"] - prev_acc
+        param_cost = row["params"] - prev_params
+        efficiency = acc_gain / max(param_cost, 1) * 1e6
+        gains.append({
+            "component": row["component"],
+            "accuracy": row["best_acc"],
+            "params": row["params"],
+            "marginal_acc_gain": acc_gain,
+            "marginal_param_cost": param_cost,
+            "efficiency_micro": efficiency,
+        })
+        prev_acc = row["best_acc"]
+        prev_params = row["params"]
+    gains = pd.DataFrame(gains)
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
@@ -95,16 +86,3 @@ def save_plots(results: pd.DataFrame, output_dir: str = "experiments"):
 
     gains.to_csv(out / "marginal_gains.csv", index=False)
     print(f"Saved marginal gains to {out / 'marginal_gains.csv'}")
-
-
-def plot_pareto_frontier(results_df, save_path="experiments/pareto_frontier.png"):
-    save_plots(results_df, Path(save_path).parent)
-
-
-def marginal_benefit_plot(results_df, save_path="experiments/marginal_benefit.png"):
-    pass
-
-
-def component_efficiency_table(results_df):
-    analyzer = ParetoAnalyzer(results_df)
-    return analyzer.marginal_gains()

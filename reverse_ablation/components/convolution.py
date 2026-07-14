@@ -4,7 +4,7 @@ from ..registry import ComponentRegistry, ComponentSpec, ModelBuilder
 
 
 def build_convolution(builder: ModelBuilder) -> ModelBuilder:
-    builder.use_conv = True
+
     model = nn.Sequential(
         nn.Conv2d(builder.in_channels, 32, kernel_size=3, padding=1),
         nn.ReLU(),

@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def build_head_only(builder: ModelBuilder) -> ModelBuilder:
-    builder.use_conv = False
+
     model = nn.Sequential(
         nn.Flatten(),
         nn.Linear(builder.input_size, builder.width),

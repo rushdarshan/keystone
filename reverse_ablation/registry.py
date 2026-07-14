@@ -23,18 +23,9 @@ class ModelBuilder:
         self.layers: nn.ModuleList = nn.ModuleList()
         self.depth = 0
         self.width = 64
-        self.use_conv = False
-        self.use_residual = False
-        self.use_batchnorm = False
-        self.use_dropout = False
-        self.use_layer_norm = False
-        self.use_attention = False
-        self.use_patch_embed = False
-        self.use_pos_embed = False
 
     def build(self) -> nn.Module:
-        seq = nn.Sequential(*self.layers)
-        return seq
+        return nn.Sequential(*self.layers)
 
 
 class ComponentRegistry:
@@ -51,13 +42,6 @@ class ComponentRegistry:
     @classmethod
     def list(cls) -> List[str]:
         return list(cls._components.keys())
-
-    @classmethod
-    def build_sequence(cls, names: List[str], builder: ModelBuilder) -> nn.Module:
-        for name in names:
-            spec = cls.get(name)
-            builder = spec.build_fn(builder)
-        return builder.build()
 
 
 def register(fn: Callable) -> ComponentSpec:

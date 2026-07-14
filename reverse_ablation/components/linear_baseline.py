@@ -5,9 +5,9 @@ from typing import Optional
 
 
 def build_linear(builder: ModelBuilder) -> ModelBuilder:
-    builder.use_conv = False
-    builder.use_patch_embed = False
-    builder.use_attention = False
+
+
+
     model = nn.Sequential(
         nn.Flatten(),
         nn.Linear(builder.input_size, builder.num_classes)

@@ -1,0 +1,297 @@
+{
+  "audit": {
+    "project": "C:\\Users\\rushd\\Downloads\\prj-res",
+    "date": "2026-07-14",
+    "total_findings": 41,
+    "summary": "No dependency manifest exists. The two sub-projects (src/keystone, reverse_ablation) share no code, duplicate ~6 patterns. Monkey-patching of EvaAttention.forward in pruning.py:128 is the highest-risk finding. Build/install reproducibility is impossible without a pyproject.toml or requirements.txt."
+  },
+  "findings": [
+    {
+      "category": "dependency_management",
+      "file": "N/A",
+      "line": "N/A",
+      "severity": "critical",
+      "description": "No pyproject.toml, requirements.txt, setup.py, setup.cfg, or environment.yml found. Dependencies (torch, timm, nnsight, torchvision, pandas, numpy, scipy, matplotlib) are undeclared, unpinned, and unreproducible. Any environment restoration requires manual guessing of compatible versions."
+    },
+    {
+      "category": "dependency_management",
+      "file": "src/keystone/utils.py",
+      "line": 30,
+      "severity": "medium",
+      "description": "Lazy import of `timm` inside `collect_environment()` hides the dependency until runtime. Combined with missing dependency manifest, this makes it impossible to know timm is required without reading all source."
+    },
+    {
+      "category": "dependency_management",
+      "file": "src/keystone/utils.py",
+      "line": 35,
+      "severity": "medium",
+      "description": "Lazy import of `nnsight` inside `collect_environment()` hides the dependency until runtime. Same issue as timm."
+    },
+    {
+      "category": "dependency_management",
+      "file": "src/keystone/data.py",
+      "line": 9,
+      "severity": "low",
+      "description": "Lazy import of `torchvision.transforms` inside `cifar100_transform()` hides torchvision as a transitive dependency."
+    },
+    {
+      "category": "dependency_management",
+      "file": "src/keystone/pruning.py",
+      "line": 230,
+      "severity": "low",
+      "description": "Lazy import of `pandas` inside `get_keystone_head_indices()` hides pandas as a dependency. Multiple other files also lazy-import pandas (visualization.py:85, scoring.py:9 uses top-level import inconsistently)."
+    },
+    {
+      "category": "module_coupling",
+      "file": "N/A",
+      "line": "N/A",
+      "severity": "low",
+      "description": "No circular imports detected. Module coupling is actually low and well-structured. The two sub-projects (src/keystone and reverse_ablation) are completely independent with zero code sharing."
+    },
+    {
+      "category": "module_coupling",
+      "file": "reverse_ablation/experiment.py",
+      "line": 14,
+      "severity": "medium",
+      "description": "`register_all()` called at module level — mutates global `ComponentRegistry` state on import. This is a side effect that makes import order matter and prevents lazy loading."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "src/keystone/baselines.py",
+      "line": 25,
+      "severity": "high",
+      "description": "QKV head-dimension slice calculation (q_s = h*hd, q_e = (h+1)*hd; k_s = n_heads*hd + h*hd; v_s = 2*n_heads*hd + h*hd) duplicated across `score_magnitude` (line 25), `score_gradient` (line 82), and `_prune_attention_heads` (line 64). Fixing the EvaAttention weight layout would require changes in 3+ places."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "src/keystone/baselines.py",
+      "line": 35,
+      "severity": "medium",
+      "description": "Projection weight column slicing (`proj.weight[:, h*hd:(h+1)*hd]`) duplicated in `score_magnitude` (line 35), `score_gradient` (line 104), and `_prune_attention_heads` (line 78)."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "src/keystone/evaluation.py",
+      "line": 110,
+      "severity": "low",
+      "description": "Model parameter counting (`sum(p.numel() for p in model.parameters())`) duplicated in 4 places: evaluation.py:110, trainer.py:71, experiment.py:62, experiment.py:107."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "reverse_ablation/experiment.py",
+      "line": 141,
+      "severity": "medium",
+      "description": "Pareto frontier computation duplicated: inline in `experiment.py:run_pareto_sequence` (lines 135-150) and again in `analysis/pareto.py:ParetoAnalyzer._compute_pareto` (lines 14-21). Same logic, two implementations."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "scripts/run_poc.py",
+      "line": 254,
+      "severity": "medium",
+      "description": "`_write_json()` helper duplicated identically in `scripts/run_poc.py:254` and `scripts/run_pruning.py:39`. Should be in `src/keystone/utils.py`."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "reverse_ablation/experiment.py",
+      "line": 37,
+      "severity": "low",
+      "description": "Manual seed-setting (`torch.manual_seed(seed); np.random.seed(seed)`) duplicates `src/keystone/utils.py:set_seed()` without using it. The reverse_ablation package does not import from keystone at all."
+    },
+    {
+      "category": "duplicated_patterns",
+      "file": "reverse_ablation/components/activation.py",
+      "line": 7,
+      "severity": "high",
+      "description": "Flatten+Linear+ReLU+Linear pattern duplicated across 7 component files: activation.py:7-11, batchnorm.py:7-12 (adds BN), dropout.py:7-12 (adds Dropout), layernorm.py:7-12 (adds LN), depth.py:7-15 (expands), width.py:7-13 (expands), head_only.py:9-20. Each copy-pastes the same 4-layer skeleton with one variation."
+    },
+    {
+      "category": "missing_abstractions",
+      "file": "src/keystone/baselines.py",
+      "line": 25,
+      "severity": "medium",
+      "description": "No shared `qkv_head_slice(head_idx, head_dim, num_heads)` utility despite the same arithmetic appearing in 3 functions across 2 files. A single function returning (q_slice, k_slice, v_slice, proj_slice) tuples would eliminate the duplication."
+    },
+    {
+      "category": "missing_abstractions",
+      "file": "src/keystone/evaluation.py",
+      "line": 110,
+      "severity": "low",
+      "description": "No shared `count_params(model)` utility despite the one-liner appearing in 4 locations."
+    },
+    {
+      "category": "missing_abstractions",
+      "file": "scripts/run_poc.py",
+      "line": 254,
+      "severity": "low",
+      "description": "No shared `write_json(path, payload)` in keystone utils despite both entry-point scripts needing it."
+    },
+    {
+      "category": "missing_abstractions",
+      "file": "src/keystone/patching.py",
+      "line": 94,
+      "severity": "high",
+      "description": "`_attention_forward()` reimplements ~60 lines of EvaAttention.forward logic inline (QKV projection, RoPE, SDPA, projection). This is a near-copy of the patched version in pruning.py:_patch_eva_attention_forward. A single shared attention-forward adapter would serve both patching and pruning."
+    },
+    {
+      "category": "missing_abstractions",
+      "file": "src/keystone/probe.py",
+      "line": 62,
+      "severity": "medium",
+      "description": "Training loop in `fit_linear_probe_from_features()` (lines 68-73) and `reverse_ablation/trainer.py:train_epoch()` (lines 30-40) share the same pattern (zero_grad, loss, backward, step) but share no code. Both are simple enough that this is borderline, but the probe loop lacks a scheduler while the trainer uses CosineAnnealingLR inconsistently."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "src/keystone/data.py",
+      "line": 14,
+      "severity": "medium",
+      "description": "ImageNet normalization stats `[0.485, 0.456, 0.406]` hardcoded. If the model checkpoint uses different normalization, the results are silently wrong."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/tasks/cifar.py",
+      "line": 21,
+      "severity": "medium",
+      "description": "CIFAR normalization stats `[0.4914, 0.4822, 0.4465]` hardcoded. Different from keystone's ImageNet stats — understandable but inconsistent with no shared config."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/registry.py",
+      "line": 26,
+      "severity": "low",
+      "description": "Default width=64 hardcoded in ModelBuilder. No way to configure from CLI."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/registry.py",
+      "line": 18,
+      "severity": "low",
+      "description": "Default input_size=3072 hardcoded (32*32*3). Should derive from img_size and in_channels."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/components/depth.py",
+      "line": 9,
+      "severity": "medium",
+      "description": "Number of hidden layers hardcoded to 3, width growth multiplier hardcoded to 2. Not configurable."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/components/attention.py",
+      "line": 47,
+      "severity": "medium",
+      "description": "num_patches=64, embed_dim=128, num_heads=4 all hardcoded in build_attention(). Not surfaced as configurable parameters."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/components/patch_embed.py",
+      "line": 53,
+      "severity": "medium",
+      "description": "patch_size=4, embed_dim=128, depth=4, num_heads=4, dropout=0.1 all hardcoded in TinyViT constructor call. None configurable."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "reverse_ablation/components/convolution.py",
+      "line": 9,
+      "severity": "medium",
+      "description": "Channel counts (32, 64), kernel_size=3, padding=1 hardcoded in build_convolution(). Not configurable."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "scripts/run_pruning.py",
+      "line": 179,
+      "severity": "medium",
+      "description": "NUM_CLASSES=100, PROBE_TRAIN_PCT=0.5, PROBE_EPOCHS=10 hardcoded as module-level constants inside _run_pruning_loop. Should be in PocConfig or CLI args."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "src/keystone/scoring.py",
+      "line": 102,
+      "severity": "low",
+      "description": "Checkpoint fingerprint prefix `b\"keystone-class-aware-v2\"` hardcoded. Schema tag `\"keystone-head-scores-v2\"` (line 169) hardcoded. If the scoring method changes, the prefix must be manually updated to invalidate old caches."
+    },
+    {
+      "category": "hardcoded_values",
+      "file": "src/keystone/scoring.py",
+      "line": 148,
+      "severity": "low",
+      "description": "`_atomic_replace` retry count=3 and delay=0.1s hardcoded."
+    },
+    {
+      "category": "monkey_patching",
+      "file": "src/keystone/pruning.py",
+      "line": 128,
+      "severity": "critical",
+      "description": "`_patch_eva_attention_forward()` monkey-patches `EvaAttention.forward` via `types.MethodType(patched_forward, attn)`. If timm changes EvaAttention's forward signature or internal logic (gate, q_norm, fused_attn, rope handling), this silently breaks. The patched function (lines 147-210) is a full copy of upstream EvaAttention.forward with one line changed (line 204: `self.attn_dim` instead of `C`). No version guard or runtime check exists."
+    },
+    {
+      "category": "monkey_patching",
+      "file": "src/keystone/patching.py",
+      "line": 41,
+      "severity": "high",
+      "description": "`patch_head()` monkey-patches module.forward via `MethodType(capture_forward, module)` and `MethodType(patch_forward, module)`. Restores original in finally (line 49), so it's transient. However, if an exception occurs between the two patches or if concurrent access happens, the module is left in an inconsistent state. Also, line 46 calls `model(clean_input)` while the patched forward delegates to `_attention_forward()` which reimplements EvaAttention logic — same fragility as pruning.py."
+    },
+    {
+      "category": "monkey_patching",
+      "file": "src/keystone/pruning.py",
+      "line": 97,
+      "severity": "high",
+      "description": "`_prune_attention_heads()` raises `TypeError` for any non-EvaAttention attention type (line 98). The error message says 'Standard ViT Attention uses a different forward that is incompatible' but this happens AFTER weight slicing has already been applied (lines 72-93). If a non-EvaAttention module is passed, it gets silently corrupted before the error is raised."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "src/keystone/scoring.py",
+      "line": 122,
+      "severity": "low",
+      "description": "`_update_tensor_hash` parameter typed as `hashlib._Hash` — a private/underscore type. Should use the public `hashlib.Hash` or the protocol available in the stdlib."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "reverse_ablation/analysis/pareto.py",
+      "line": 104,
+      "severity": "low",
+      "description": "`marginal_benefit_plot()` is an empty stub function (pass). Dead code, never called with effect."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "reverse_ablation/registry.py",
+      "line": 63,
+      "severity": "medium",
+      "description": "`register()` decorator calls `fn(None)` — passes None as builder to the build function at decoration time. This relies on the convention that build functions don't actually use their argument until called from `ComponentRegistry.build_sequence()`. Fragile: if any build function accesses the builder parameter during import, it will crash on None."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "src/keystone/visualization.py",
+      "line": 9,
+      "severity": "medium",
+      "description": "`matplotlib.use(\"Agg\")` at module level affects global matplotlib backend state. This is a side effect on import — any other code in the same process that wants an interactive backend will break. Should be set via MPLBACKEND environment variable or in the entry point."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "reverse_ablation/components/patch_embed.py",
+      "line": 49,
+      "severity": "low",
+      "description": "Redundant `import torch` inside `build_patch_embed()` — already imported at module top (line 2)."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "src/keystone/probe.py",
+      "line": 40,
+      "severity": "medium",
+      "description": "`extract_features()` checks `features.ndim != 2` expecting [batch, features] backbone output. This silently breaks with ViT models that output CLS-token embeddings of shape [batch, 1, features] or patch-level features. The assertion is fragile against different model output conventions."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "reverse_ablation/components/activation.py",
+      "line": 11,
+      "severity": "medium",
+      "description": "Uses `nn.ModuleList` where `nn.Sequential` is needed. ModuleList does not chain forward calls — the model will not execute correctly unless the caller explicitly iterates. Several other component files have the same bug (batchnorm.py:12, dropout.py:12, layernorm.py:12, depth.py:16, width.py:13, head_only.py:15). The `ModelBuilder.build()` wraps them in `nn.Sequential(*self.layers)` which paper over this, but the intermediate `builder.layers` data structure is semantically wrong."
+    },
+    {
+      "category": "deprecated_api",
+      "file": "src/keystone/models.py",
+      "line": 13,
+      "severity": "low",
+      "description": "`load_fallback()` delegates to `load_dinov3()` — name implies DINOv3 but actually loads the fallback model (DINOv2 or DINOv3). Naming is misleading. The docstring on `load_dinov3` says 'Load DINOv3' but the default parameter is `vit_base_patch16_reg8_dino` which may not be DINOv3."
+    }
+  ]
+}

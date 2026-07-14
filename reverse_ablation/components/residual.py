@@ -46,9 +46,9 @@ class ResNetLike(nn.Module):
 
 
 def build_residual(builder: ModelBuilder) -> ModelBuilder:
-    builder.use_residual = True
-    builder.use_conv = True
-    builder.use_batchnorm = True
+
+
+
     builder.layers = nn.ModuleList([ResNetLike(num_classes=builder.num_classes, width=builder.width)])
     return builder
 

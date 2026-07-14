@@ -44,8 +44,8 @@ class TinyViT(nn.Module):
 
 
 def build_patch_embed(builder: ModelBuilder) -> ModelBuilder:
-    builder.use_patch_embed = True
-    builder.use_attention = True
+
+
     import torch
     model = TinyViT(
         in_channels=builder.in_channels,

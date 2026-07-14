@@ -146,15 +146,6 @@ def _load_checkpoint(checkpoint_path: Path, *, fingerprint: str) -> list[dict]:
     return df.to_dict("records")
 
 
-def _atomic_replace(src: Path, dst: Path, *, retries: int = 3, delay: float = 0.1) -> None:
-    for attempt in range(retries):
-        try:
-            os.replace(src, dst)
-            return
-        except OSError:
-            if attempt == retries - 1:
-                raise
-            time.sleep(delay)
 
 
 def _write_checkpoint(checkpoint_path: Path, records: list[dict], *, fingerprint: str) -> None:
@@ -172,5 +163,5 @@ def _write_checkpoint(checkpoint_path: Path, records: list[dict], *, fingerprint
     temporary_metadata = metadata_path.with_suffix(metadata_path.suffix + ".tmp")
     temporary_metadata.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
-    _atomic_replace(temporary_path, checkpoint_path)
-    _atomic_replace(temporary_metadata, metadata_path)
+    os.replace(temporary_path, checkpoint_path)
+    os.replace(temporary_metadata, metadata_path)
