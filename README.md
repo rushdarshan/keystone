@@ -18,6 +18,12 @@ git clone https://github.com/rushdarshan/keystone.git && cd keystone
 pip install torch torchvision nnsight timm scipy scikit-learn matplotlib pandas tqdm pytest
 ```
 
+## Requirements
+
+- Python 3.13+
+- CUDA-capable GPU with ≥6 GB VRAM (tested on RTX 4050 Laptop)
+- PyTorch 2.x with CUDA support
+
 ## Quick Start
 
 ```bash
@@ -51,17 +57,38 @@ python scripts/run_pruning.py --output-dir experiments/my_run
 
 ## Results
 
-**Feasibility PoC** — DINOv3 ViT-B/16, CIFAR-100, RTX 4050 (6.44 GB VRAM):
+### Feasibility PoC
 
-| Gate | Threshold | Result |
-|------|-----------|--------|
-| Q0 — Linear probe accuracy | ≥ 10% | **80.7%** |
-| Q1 — Head discovery | 144 heads | **144/144** |
-| Q2 — Measurable patching effect | — | **Pass** |
-| Q3 — Ranking stability (Kendall τ) | ≥ 0.7 | **0.849** (mean) |
-| Q4 — Runtime estimate | ≤ 12h | **198s** |
-| Q5 — Peak VRAM | < 11 GB | **0.61 GB** |
-| **Verdict** | | **GO** |
+DINOv3 ViT-B/16 on CIFAR-100, RTX 4050 (6.44 GB VRAM):
+
+| Gate | Result |
+|------|--------|
+| Head discovery | 144/144 |
+| Ranking stability (Kendall τ) | 0.849 |
+| Runtime (all 144 heads) | 198s |
+| Peak VRAM | 0.61 GB |
+| **Verdict** | **GO** |
+
+### Pruning Benchmark
+
+Post-prune linear probe accuracy at 4 sparsity ratios (1000 CIFAR-100 images, 25 probe epochs):
+
+| Method | 25% sparsity | 50% sparsity | 75% sparsity | 90% sparsity |
+|--------|-------------|-------------|-------------|-------------|
+| **Gradient** | **49.0%** | 14.6% | 8.8% | 8.6% |
+| Causal | 35.4% | 12.6% | 9.4% | 9.0% |
+| Random | 35.0% | 8.8% | 7.8% | 7.4% |
+| Magnitude | 6.0% | 6.0% | 6.0% | 6.6% |
+
+### Key Findings
+
+- **Causal importance and weight magnitude are complementary signals** — Kendall τ = -0.15, confirming the keystone hypothesis that magnitude misses causally important heads.
+- **Gradient-based importance is the most effective pruning signal** — 49% accuracy at 25% sparsity vs. 35% for causal and 6% for magnitude.
+- **Structured head removal is inherently destructive** without fine-tuning — even at 25% sparsity, accuracy drops from 80.7% (unpruned) to 35–49%.
+
+## Paper
+
+A full paper draft is available at [`paper/keystone.md`](paper/keystone.md).
 
 ## Project Structure
 
@@ -95,7 +122,7 @@ tests/                     # 40 tests, all passing
 ```bibtex
 @misc{keystone2026,
   title  = {Keystone: Causal Importance-Guided Structured Pruning for Vision Transformers},
-  author = {},
+  author = {rushdarshan},
   year   = {2026},
   note   = {arXiv preprint}
 }
