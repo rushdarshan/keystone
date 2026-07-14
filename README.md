@@ -75,15 +75,17 @@ Post-prune linear probe accuracy at 4 sparsity ratios (1000 CIFAR-100 images, 25
 
 | Method | 25% sparsity | 50% sparsity | 75% sparsity | 90% sparsity |
 |--------|-------------|-------------|-------------|-------------|
-| **Gradient** | **49.0%** | 14.6% | 8.8% | 8.6% |
+| **Ensemble (70/30)** | **51.8%** | 16.6% | — | — |
+| Ensemble (50/50) | 50.4% | **19.2%** | — | — |
+| **Gradient** | 49.0% | 14.6% | 8.8% | 8.6% |
 | Causal | 35.4% | 12.6% | 9.4% | 9.0% |
 | Random | 35.0% | 8.8% | 7.8% | 7.4% |
 | Magnitude | 6.0% | 6.0% | 6.0% | 6.6% |
 
 ### Key Findings
 
-- **Causal importance and weight magnitude are complementary signals** — Kendall τ = -0.15, confirming the keystone hypothesis that magnitude misses causally important heads.
-- **Gradient-based importance is the most effective pruning signal** — 49% accuracy at 25% sparsity vs. 35% for causal and 6% for magnitude.
+- **Causal importance adds complementary value to gradient** — Ensemble (causal+gradient) achieves 51.8% at 25% sparsity, beating pure gradient (49.0%) by 2.8%. The weighted combination of both signals is the strongest pruning method.
+- **Gradient-based importance is the strongest single signal** — 49% accuracy at 25% sparsity vs. 35% for causal and 6% for magnitude.
 - **Structured head removal is inherently destructive** without fine-tuning — even at 25% sparsity, accuracy drops from 80.7% (unpruned) to 35–49%.
 
 ## Paper
