@@ -298,6 +298,8 @@ def main() -> int:
     parser.add_argument("--skip-causal", action="store_true")
     parser.add_argument("--skip-eval", action="store_true")
     parser.add_argument("--probe-epochs", type=int, default=10)
+    parser.add_argument("--ensemble-weights", type=str, default="0.5,0.5",
+                        help="causal,gradient weights for ensemble (default: 0.5,0.5)")
     parser.add_argument("--quick", action="store_true")
     parser.add_argument("--pretrained", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
@@ -388,13 +390,14 @@ def main() -> int:
         causal_renamed = scores["causal"].copy()
         if "causal_score" in causal_renamed.columns:
             causal_renamed = causal_renamed.rename(columns={"causal_score": "score"})
+        w_causal, w_grad = (float(x) for x in args.ensemble_weights.split(","))
         scores["ensemble"] = score_ensemble(
             {"causal": causal_renamed, "gradient": scores["gradient"]},
-            {"causal": 0.5, "gradient": 0.5},
+            {"causal": w_causal, "gradient": w_grad},
         )
         scores["ensemble"] = _add_layer_info(scores["ensemble"], head_specs)
         print(f"  ensemble: {len(scores['ensemble'])} heads scored "
-              f"(50/50 causal/gradient)")
+              f"({w_causal:.0%}/{w_grad:.0%} causal/gradient)")
 
     # --- Eval data ---
     print(f"\n=== Loading eval data ({cfg.n_eval_images} images) ===")
