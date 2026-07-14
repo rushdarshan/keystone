@@ -167,6 +167,8 @@ def _run_pruning_loop(
     model: torch.nn.Module,
     head_specs: list[dict],
     scores: dict[str, pd.DataFrame],
+    probe_dataset: torch.utils.data.Dataset,
+    probe_indices: list[int],
     eval_dataset: torch.utils.data.Dataset,
     eval_indices: list[int],
     sample_input: torch.Tensor,
@@ -178,13 +180,14 @@ def _run_pruning_loop(
     probe_epochs: int = 10,
 ) -> dict[str, dict]:
     NUM_CLASSES = 100
-    PROBE_TRAIN_PCT = 0.5
 
     results: dict[str, dict] = {}
     active_methods = [m for m in METHODS if m in scores or m == "random"]
     if "gradient" not in scores:
         active_methods = [m for m in active_methods if m != "gradient"]
 
+    # Extract train features ONCE per method (they don't change per ratio)
+    # Actually they do change per ratio since pruning changes — extract per loop iteration
     for seed in seeds:
         seed_key = str(seed)
         results[seed_key] = {}
@@ -208,15 +211,11 @@ def _run_pruning_loop(
                 record: dict = {"ratio": float(ratio)}
 
                 if not skip_eval:
-                    split = int(len(eval_indices) * PROBE_TRAIN_PCT)
-                    train_idx = eval_indices[:split]
-                    val_idx = eval_indices[split:]
-
                     train_feat, train_lbl = extract_features(
-                        pruned, eval_dataset, train_idx, device=cfg.device, batch_size=cfg.batch_size,
+                        pruned, probe_dataset, probe_indices, device=cfg.device, batch_size=cfg.batch_size,
                     )
                     val_feat, val_lbl = extract_features(
-                        pruned, eval_dataset, val_idx, device=cfg.device, batch_size=cfg.batch_size,
+                        pruned, eval_dataset, eval_indices, device=cfg.device, batch_size=cfg.batch_size,
                     )
 
                     probe, probe_acc = fit_linear_probe_from_features(
@@ -232,7 +231,7 @@ def _run_pruning_loop(
                     install_linear_probe(pruned, probe)
 
                     val_loader = DataLoader(
-                        torch.utils.data.Subset(eval_dataset, val_idx),
+                        torch.utils.data.Subset(eval_dataset, eval_indices),
                         batch_size=cfg.batch_size, shuffle=False,
                     )
                     acc = evaluate_accuracy(pruned, val_loader, cfg.device)
@@ -298,6 +297,7 @@ def main() -> int:
     parser.add_argument("--skip-causal", action="store_true")
     parser.add_argument("--skip-eval", action="store_true")
     parser.add_argument("--probe-epochs", type=int, default=10)
+    parser.add_argument("--probe-train-images", type=int, default=5000)
     parser.add_argument("--ensemble-weights", type=str, default="0.5,0.5",
                         help="causal,gradient weights for ensemble (default: 0.5,0.5)")
     parser.add_argument("--quick", action="store_true")
@@ -402,6 +402,16 @@ def main() -> int:
     # --- Eval data ---
     print(f"\n=== Loading eval data ({cfg.n_eval_images} images) ===")
     eval_dataset, eval_indices = _load_eval_dataset(cfg.n_eval_images, cfg.seed)
+
+    # --- Probe training data from full CIFAR-100 train set ---
+    print(f"=== Loading probe training data ({args.probe_train_images} images) ===")
+    transform = cifar100_transform()
+    train_dataset = datasets.CIFAR100(root="./data", train=True, download=True, transform=transform)
+    probe_indices = stratified_subset_indices(
+        train_dataset.targets, args.probe_train_images, cfg.seed, composition_seed=0,
+    )
+    print(f"  probe: {len(probe_indices)} train images from {len(train_dataset)} total")
+
     sample_input = images[:1].clone()
     unpruned_eff = measure_efficiency(model, sample_input, cfg.device)
     print(f"  unpruned: {unpruned_eff['throughput_ips']:.1f} ips, "
@@ -416,7 +426,7 @@ def main() -> int:
     else:
         print("\n=== Pruning + evaluation ===")
         results = _run_pruning_loop(
-            model, head_specs, scores, eval_dataset, eval_indices, sample_input,
+            model, head_specs, scores, train_dataset, probe_indices, eval_dataset, eval_indices, sample_input,
             cfg, ratios, seeds,
             skip_eval=args.skip_eval,
             probe_epochs=args.probe_epochs,
