@@ -143,3 +143,37 @@ def _resolve_head_dim(spec: dict, mod: torch.nn.Module) -> int:
     if hasattr(mod, "qkv") and mod.qkv is not None:
         return mod.qkv.out_features // (3 * n_heads)
     return mod.q_proj.out_features // n_heads
+
+
+def score_ensemble(
+    score_dfs: dict[str, pd.DataFrame],
+    weights: dict[str, float],
+    normalize: bool = True,
+) -> pd.DataFrame:
+    """Weighted ensemble of multiple scoring methods.
+
+    Args:
+        score_dfs: Dict mapping method name to DataFrame with [head_idx, score].
+        weights: Dict mapping method name to float weight.
+        normalize: If True, min-max normalize each method's scores before weighting.
+
+    Returns:
+        DataFrame with [head_idx, score] sorted descending.
+    """
+    head_idx = None
+    combined = np.zeros(len(next(iter(score_dfs.values()))))
+
+    for method, weight in weights.items():
+        df = score_dfs[method]
+        scores = df.sort_values("head_idx")["score"].values.astype(np.float64)
+
+        if normalize:
+            s_min, s_max = scores.min(), scores.max()
+            if s_max > s_min:
+                scores = (scores - s_min) / (s_max - s_min)
+
+        combined += weight * scores
+
+    head_indices = score_dfs[list(score_dfs.keys())[0]].sort_values("head_idx")["head_idx"].values
+    records = [{"head_idx": int(h), "score": float(combined[i])} for i, h in enumerate(head_indices)]
+    return pd.DataFrame(records).sort_values("score", ascending=False).reset_index(drop=True)

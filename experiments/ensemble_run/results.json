@@ -1,0 +1,114 @@
+{
+  "42": {
+    "causal": {
+      "0.25": {
+        "param_count_millions": 78.64,
+        "peak_vram_gb": 0.9901,
+        "probe_val_accuracy": 0.354,
+        "ratio": 0.25,
+        "throughput_ips": 107.51,
+        "top1_accuracy": 0.354,
+        "top5_accuracy": 0.638,
+        "total_samples": 500
+      },
+      "0.5": {
+        "param_count_millions": 71.56,
+        "peak_vram_gb": 1.0286,
+        "probe_val_accuracy": 0.126,
+        "ratio": 0.5,
+        "throughput_ips": 106.71,
+        "top1_accuracy": 0.126,
+        "top5_accuracy": 0.328,
+        "total_samples": 500
+      }
+    },
+    "ensemble": {
+      "0.25": {
+        "param_count_millions": 78.64,
+        "peak_vram_gb": 1.2465,
+        "probe_val_accuracy": 0.504,
+        "ratio": 0.25,
+        "throughput_ips": 104.02,
+        "top1_accuracy": 0.504,
+        "top5_accuracy": 0.8,
+        "total_samples": 500
+      },
+      "0.5": {
+        "param_count_millions": 71.56,
+        "peak_vram_gb": 1.0086,
+        "probe_val_accuracy": 0.192,
+        "ratio": 0.5,
+        "throughput_ips": 107.62,
+        "top1_accuracy": 0.192,
+        "top5_accuracy": 0.432,
+        "total_samples": 500
+      }
+    },
+    "gradient": {
+      "0.25": {
+        "param_count_millions": 78.64,
+        "peak_vram_gb": 1.0345,
+        "probe_val_accuracy": 0.49,
+        "ratio": 0.25,
+        "throughput_ips": 104.97,
+        "top1_accuracy": 0.49,
+        "top5_accuracy": 0.784,
+        "total_samples": 500
+      },
+      "0.5": {
+        "param_count_millions": 71.56,
+        "peak_vram_gb": 1.0653,
+        "probe_val_accuracy": 0.146,
+        "ratio": 0.5,
+        "throughput_ips": 109.23,
+        "top1_accuracy": 0.146,
+        "top5_accuracy": 0.358,
+        "total_samples": 500
+      }
+    },
+    "magnitude": {
+      "0.25": {
+        "param_count_millions": 78.64,
+        "peak_vram_gb": 1.0905,
+        "probe_val_accuracy": 0.06,
+        "ratio": 0.25,
+        "throughput_ips": 104.09,
+        "top1_accuracy": 0.06,
+        "top5_accuracy": 0.214,
+        "total_samples": 500
+      },
+      "0.5": {
+        "param_count_millions": 71.56,
+        "peak_vram_gb": 0.967,
+        "probe_val_accuracy": 0.06,
+        "ratio": 0.5,
+        "throughput_ips": 112.72,
+        "top1_accuracy": 0.06,
+        "top5_accuracy": 0.188,
+        "total_samples": 500
+      }
+    },
+    "random": {
+      "0.25": {
+        "param_count_millions": 78.64,
+        "peak_vram_gb": 1.1245,
+        "probe_val_accuracy": 0.35,
+        "ratio": 0.25,
+        "throughput_ips": 104.88,
+        "top1_accuracy": 0.35,
+        "top5_accuracy": 0.634,
+        "total_samples": 500
+      },
+      "0.5": {
+        "param_count_millions": 71.56,
+        "peak_vram_gb": 1.1696,
+        "probe_val_accuracy": 0.088,
+        "ratio": 0.5,
+        "throughput_ips": 111.58,
+        "top1_accuracy": 0.088,
+        "top5_accuracy": 0.272,
+        "total_samples": 500
+      }
+    }
+  }
+}

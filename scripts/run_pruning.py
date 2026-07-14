@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 
 from src.keystone.analysis import compare_rankings
-from src.keystone.baselines import score_gradient, score_magnitude, score_random
+from src.keystone.baselines import score_ensemble, score_gradient, score_magnitude, score_random
 from src.keystone.config import PocConfig
 from src.keystone.data import cifar100_transform, stratified_subset_indices
 from src.keystone.evaluation import evaluate_accuracy, measure_efficiency
@@ -32,7 +32,7 @@ from src.keystone.utils import format_time, set_seed, write_environment
 from src.keystone.vit_adapters import discover_head_specs
 
 # ponytail: module-level constant, no config object needed
-METHODS = ("causal", "magnitude", "gradient", "random")
+METHODS = ("causal", "magnitude", "gradient", "random", "ensemble")
 DETERMINISTIC_METHODS = ("causal", "magnitude", "gradient")
 
 
@@ -381,6 +381,20 @@ def main() -> int:
               f"({correlations['keystone_pct']}%)")
     else:
         print("  skipped (missing gradient scores from --quick)")
+
+    # --- Ensemble scoring ---
+    if "causal" in scores and "gradient" in scores:
+        print("\n=== Ensemble scoring ===")
+        causal_renamed = scores["causal"].copy()
+        if "causal_score" in causal_renamed.columns:
+            causal_renamed = causal_renamed.rename(columns={"causal_score": "score"})
+        scores["ensemble"] = score_ensemble(
+            {"causal": causal_renamed, "gradient": scores["gradient"]},
+            {"causal": 0.5, "gradient": 0.5},
+        )
+        scores["ensemble"] = _add_layer_info(scores["ensemble"], head_specs)
+        print(f"  ensemble: {len(scores['ensemble'])} heads scored "
+              f"(50/50 causal/gradient)")
 
     # --- Eval data ---
     print(f"\n=== Loading eval data ({cfg.n_eval_images} images) ===")
