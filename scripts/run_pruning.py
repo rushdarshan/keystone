@@ -26,6 +26,7 @@ from src.keystone.data import cifar100_transform, stratified_subset_indices
 from src.keystone.evaluation import evaluate_accuracy, measure_efficiency
 from src.keystone.models import load_dinov3
 from src.keystone.pruning import get_keystone_head_indices, prune_heads
+from src.keystone.probe import extract_features, fit_linear_probe_from_features, install_linear_probe
 from src.keystone.scoring import score_all_heads
 from src.keystone.utils import format_time, set_seed, write_environment
 from src.keystone.vit_adapters import discover_head_specs
@@ -56,17 +57,14 @@ def _load_scoring_images(
     return images.to(device), labels.to(device), indices
 
 
-def _load_eval_loader(
+def _load_eval_dataset(
     n_images: int,
-    batch_size: int,
     seed: int,
-    num_workers: int = 2,
-) -> DataLoader:
+) -> tuple[torch.utils.data.Dataset, list[int]]:
     transform = cifar100_transform()
     dataset = datasets.CIFAR100(root="./data", train=False, download=True, transform=transform)
     indices = stratified_subset_indices(dataset.targets, n_images, seed)
-    subset = torch.utils.data.Subset(dataset, indices)
-    return DataLoader(subset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    return dataset, indices
 
 
 def _add_layer_info(df: pd.DataFrame, head_specs: list[dict]) -> pd.DataFrame:
@@ -169,7 +167,8 @@ def _run_pruning_loop(
     model: torch.nn.Module,
     head_specs: list[dict],
     scores: dict[str, pd.DataFrame],
-    eval_loader: DataLoader,
+    eval_dataset: torch.utils.data.Dataset,
+    eval_indices: list[int],
     sample_input: torch.Tensor,
     cfg: PocConfig,
     ratios: tuple[float, ...],
@@ -177,6 +176,10 @@ def _run_pruning_loop(
     *,
     skip_eval: bool,
 ) -> dict[str, dict]:
+    NUM_CLASSES = 100
+    PROBE_TRAIN_PCT = 0.5
+    PROBE_EPOCHS = 10
+
     results: dict[str, dict] = {}
     active_methods = [m for m in METHODS if m in scores or m == "random"]
     if "gradient" not in scores:
@@ -205,9 +208,37 @@ def _run_pruning_loop(
                 record: dict = {"ratio": float(ratio)}
 
                 if not skip_eval:
-                    acc = evaluate_accuracy(pruned, eval_loader, cfg.device)
+                    split = int(len(eval_indices) * PROBE_TRAIN_PCT)
+                    train_idx = eval_indices[:split]
+                    val_idx = eval_indices[split:]
+
+                    train_feat, train_lbl = extract_features(
+                        pruned, eval_dataset, train_idx, device=cfg.device, batch_size=cfg.batch_size,
+                    )
+                    val_feat, val_lbl = extract_features(
+                        pruned, eval_dataset, val_idx, device=cfg.device, batch_size=cfg.batch_size,
+                    )
+
+                    probe, probe_acc = fit_linear_probe_from_features(
+                        train_feat, train_lbl,
+                        val_feat, val_lbl,
+                        num_classes=NUM_CLASSES,
+                        epochs=PROBE_EPOCHS,
+                        learning_rate=0.01,
+                        weight_decay=1e-4,
+                        seed=cfg.seed,
+                        device=cfg.device,
+                    )
+                    install_linear_probe(pruned, probe)
+
+                    val_loader = DataLoader(
+                        torch.utils.data.Subset(eval_dataset, val_idx),
+                        batch_size=cfg.batch_size, shuffle=False,
+                    )
+                    acc = evaluate_accuracy(pruned, val_loader, cfg.device)
                     record.update(acc)
-                    print(f"    top1={acc['top1_accuracy']:.4f}  top5={acc['top5_accuracy']:.4f}")
+                    record["probe_val_accuracy"] = round(probe_acc, 4)
+                    print(f"    probe_acc={probe_acc:.4f}  top1={acc['top1_accuracy']:.4f}  top5={acc['top5_accuracy']:.4f}")
 
                 eff = measure_efficiency(pruned, sample_input, cfg.device)
                 record.update(eff)
@@ -352,7 +383,7 @@ def main() -> int:
 
     # --- Eval data ---
     print(f"\n=== Loading eval data ({cfg.n_eval_images} images) ===")
-    eval_loader = _load_eval_loader(cfg.n_eval_images, cfg.batch_size, cfg.seed)
+    eval_dataset, eval_indices = _load_eval_dataset(cfg.n_eval_images, cfg.seed)
     sample_input = images[:1].clone()
     unpruned_eff = measure_efficiency(model, sample_input, cfg.device)
     print(f"  unpruned: {unpruned_eff['throughput_ips']:.1f} ips, "
@@ -367,7 +398,7 @@ def main() -> int:
     else:
         print("\n=== Pruning + evaluation ===")
         results = _run_pruning_loop(
-            model, head_specs, scores, eval_loader, sample_input,
+            model, head_specs, scores, eval_dataset, eval_indices, sample_input,
             cfg, ratios, seeds,
             skip_eval=args.skip_eval,
         )
