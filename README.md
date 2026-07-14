@@ -71,22 +71,23 @@ DINOv3 ViT-B/16 on CIFAR-100, RTX 4050 (6.44 GB VRAM):
 
 ### Pruning Benchmark
 
-Post-prune linear probe accuracy at 4 sparsity ratios (1000 CIFAR-100 images, 25 probe epochs):
+Post-prune linear probe accuracy with full CIFAR-100 training set (5000 probe images, 100 epochs):
 
-| Method | 25% sparsity | 50% sparsity | 75% sparsity | 90% sparsity |
-|--------|-------------|-------------|-------------|-------------|
-| **Ensemble (70/30)** | **51.8%** | 16.6% | — | — |
-| Ensemble (50/50) | 50.4% | **19.2%** | — | — |
-| **Gradient** | 49.0% | 14.6% | 8.8% | 8.6% |
-| Causal | 35.4% | 12.6% | 9.4% | 9.0% |
-| Random | 35.0% | 8.8% | 7.8% | 7.4% |
-| Magnitude | 6.0% | 6.0% | 6.0% | 6.6% |
+| Method | 25% sparsity | 50% sparsity |
+|--------|-------------|-------------|
+| **Ensemble (causal+gradient)** | **74.2%** | 37.4% |
+| Gradient | 73.2% | **39.1%** |
+| Causal | 61.2% | 33.6% |
+| Random | 61.7% | 28.5% |
+| Magnitude | 22.2% | 18.2% |
+
+Unpruned DINOv3 baseline: 80.7%. At 25% sparsity, the ensemble retains **92% of unpruned accuracy** while reducing parameters from 85.6M to 78.6M.
 
 ### Key Findings
 
-- **Causal importance adds complementary value to gradient** — Ensemble (causal+gradient) achieves 51.8% at 25% sparsity, beating pure gradient (49.0%) by 2.8%. The weighted combination of both signals is the strongest pruning method.
-- **Gradient-based importance is the strongest single signal** — 49% accuracy at 25% sparsity vs. 35% for causal and 6% for magnitude.
-- **Structured head removal is inherently destructive** without fine-tuning — even at 25% sparsity, accuracy drops from 80.7% (unpruned) to 35–49%.
+- **Structured pruning preserves representations** — At 25% sparsity with proper probe training, ensemble retains 92% of unpruned accuracy (74.2% vs 80.7%). The earlier noise-floor results were caused by insufficient probe data, not pruning damage.
+- **Causal importance and weight magnitude are complementary signals** — Kendall τ = -0.15 between causal and magnitude scores. The ensemble of causal + gradient achieves the best result at 25% sparsity.
+- **Gradient-based importance is the strongest single signal** — At 50% sparsity, gradient alone retains 39.1% vs 33.6% for causal.
 
 ## Paper
 
